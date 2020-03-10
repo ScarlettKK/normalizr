@@ -1,26 +1,25 @@
+import SchemaEntity from '../schema/SchemaEntity'
+
 export default class Structure {
   constructor (data, entity) {
-    this.data = this.deepCopy(data)
-    this.entity = entity.copyEntityParams(entity.entityParams) // 是不是一个规范的做法？
+    this.data = data // 当data有环的时候，深拷贝gg了...
+    this.entity = entity // 是不是一个规范的做法？
   }
 
   deepCopy (data) {
     let copyResult
 
-    if (typeof data !== 'object') {
-      return data
-    } else {
-      copyResult = new data.constructor()
-      for (let key in data) {
-        copyResult[key] = this.deepCopy(data[key])
-      }
-    }
+    copyResult = JSON.parse(JSON.stringify(data))
 
     return copyResult
   }
 
-  isEntity (key) {
-    for (let e in this.entity) {
+  getEntityParams (entity) {
+    if (entity instanceof SchemaEntity) { return entity.entityParams } else { return entity }
+  }
+
+  isEntity (key, entityParams) {
+    for (let e in entityParams) {
       if (e === key) return true
     }
 

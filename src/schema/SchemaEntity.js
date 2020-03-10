@@ -20,4 +20,8 @@ export default class SchemaEntity {
 
     return copyResult
   }
+
+  getDataID (data) {
+    return data[this.entityConfig] // 可能会没有ID
+  }
 }
