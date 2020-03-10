@@ -42,7 +42,7 @@ const mybookOriginalData = {
 
 const normalizedData = normalize(mybookOriginalData, mybook)
 
-test('denormalizedData test1', () => {
+test('denormalizedData common test', () => {
   expect(denormalize(['999'], [user], normalizedData.entities)).toEqual(
     [
       {
@@ -53,7 +53,7 @@ test('denormalizedData test1', () => {
   )
 })
 
-test('denormalizedData test2', () => {
+test('denormalizedData get part info test', () => {
   expect(denormalize('666', mybook, normalizedData.entities)).toEqual(
     {
       customizedId: '666',
@@ -103,9 +103,43 @@ const expectCircleUser = {
 
 expectCircleUser.friends.push(expectCircleUser)
 
-test('denormalizedData test3', () => {
+test('denormalizedData cicular test', () => {
   expect(denormalize(123, circleUser, circleData.entities)).toEqual(
     expectCircleUser
+  )
+})
+
+const implicitCircleData = {
+  entities: {
+    circleUser: {
+      123: {
+        friends: [456],
+        id: 123
+      },
+      456: {
+        friends: [123],
+        id: 456
+      }
+    }
+  },
+  result: 123
+}
+
+const expectImplicitCircleUser123 = {
+  'friends': [],
+  'id': 123
+}
+
+const expectImplicitCircleUser456 = {
+  'friends': [expectImplicitCircleUser123],
+  'id': 456
+}
+
+expectImplicitCircleUser123.friends.push(expectImplicitCircleUser456)
+
+test('denormalizedData implicit cicular test', () => {
+  expect(denormalize(123, circleUser, implicitCircleData.entities)).toEqual(
+    expectImplicitCircleUser123
   )
 })
 

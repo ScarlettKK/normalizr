@@ -136,6 +136,64 @@ test('normalized Data test with array', () => {
   )
 })
 
+test('normalized Data test with cicular', () => {
+  const circleUser = new schema.Entity('circleUser')
+
+  circleUser.define({
+    friends: [circleUser]
+  })
+
+  const circleUserData = {
+    'friends': [],
+    'id': 123
+  }
+
+  circleUserData.friends.push(circleUserData)
+
+  const implicitCircleUser123 = {
+    'friends': [],
+    'id': 123
+  }
+
+  const implicitCircleUser456 = {
+    'friends': [implicitCircleUser123],
+    'id': 456
+  }
+
+  implicitCircleUser123.friends.push(implicitCircleUser456)
+
+  const expectCircleData = {
+    entities: {
+      circleUser: {
+        123: {
+          friends: [123],
+          id: 123
+        }
+      }
+    },
+    result: 123
+  }
+
+  const expectImplicitCircleData = {
+    entities: {
+      circleUser: {
+        123: {
+          friends: [456],
+          id: 123
+        },
+        456: {
+          friends: [123],
+          id: 456
+        }
+      }
+    },
+    result: 123
+  }
+
+  expect(normalize(circleUserData, circleUser)).toEqual(expectCircleData)
+  expect(normalize(implicitCircleUser123, circleUser)).toEqual(expectImplicitCircleData)
+})
+
 describe('normalize', () => {
   [42, null, undefined, '42', () => {}].forEach((input) => {
     test(`cannot normalize input that == ${input}`, () => {
