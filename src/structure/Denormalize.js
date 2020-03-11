@@ -6,6 +6,7 @@ export default class Denormalize extends Structure {
     super(data, entity)
     this.denormalizeDataId = denormalizeDataId
     this.denormalizedFrom = {}
+    this.structuredFrom = this.denormalizedFrom
   }
 
   denormalizeProcessing () {
@@ -13,7 +14,6 @@ export default class Denormalize extends Structure {
     const entity = this.entity
 
     this.denormalizedData = this.initDenormalizedResult(dataId)
-
     this.buildDenormalizedData(entity, dataId, this.denormalizedData)
 
     return this.denormalizedData
@@ -95,7 +95,7 @@ export default class Denormalize extends Structure {
   }
 
   getDenormalizedItem (entityName, id) {
-    const isDenormalized = this.isDataAlreadyDenormalized(entityName, id)
+    const isDenormalized = this.isDataItemAlreadyStructured(entityName, id)
     if (isDenormalized) {
       const denormalizedEntity = this.denormalizedFrom[entityName]
       return denormalizedEntity[id]
@@ -112,18 +112,5 @@ export default class Denormalize extends Structure {
     }
 
     entity[id] = entityPointer
-  }
-
-  isDataAlreadyDenormalized (entityName, id) { // 这个看看怎么抽象，重复了
-    const entities = this.denormalizedFrom
-    const entity = entities[entityName]
-
-    if (!entity) return false
-
-    const item = entity[id]
-
-    if (!item) return false
-
-    return true
   }
 }

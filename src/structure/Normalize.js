@@ -6,6 +6,7 @@ export default class Normalize extends Structure {
     super(data, entity)
     this.normalizedData = {}
     this.normalizedData.entities = {}
+    this.structuredFrom = this.normalizedData.entities
   }
 
   normalizeProcessing () {
@@ -14,7 +15,6 @@ export default class Normalize extends Structure {
     const data = this.data
 
     normalizedData.result = this.getIDFromData(data, entity)
-
     this.buildEntitiesForm(data, entity)
 
     return normalizedData
@@ -26,8 +26,8 @@ export default class Normalize extends Structure {
     const result = []
     const currentEntity = entity[0]
 
-    data.forEach((dataItem) => {
-      const itemID = currentEntity.getDataID(dataItem)
+    data.forEach((item) => {
+      const itemID = currentEntity.getDataID(item)
       result.push(itemID)
     })
 
@@ -37,33 +37,33 @@ export default class Normalize extends Structure {
   buildEntitiesForm (data, entity) {
     if (entity instanceof Array) { // 可能会entity与data不同步为[]
       const currentEntity = entity[0]
-
-      data.forEach((dataItem) => {
-        this.buildEntryFrom(dataItem, currentEntity)
+      data.forEach((item) => {
+        this.buildEntityFrom(item, currentEntity)
       })
     } else {
-      this.buildEntryFrom(data, entity)
+      this.buildEntityFrom(data, entity)
     }
   }
 
-  buildEntryFrom (data, entity) {
-    const itemID = entity.getDataID(data)
+  buildEntityFrom (data, entity) {
     const entityName = entity.name
-    if (this.isDataItemAlreadyNormalized(entityName, itemID)) { return }
+    const itemID = entity.getDataID(data)
+    if (this.isDataItemAlreadyStructured(entityName, itemID)) { return }
 
     const entities = this.normalizedData.entities
-    let targetEntity = entities[entityName]
-    if (!targetEntity) {
+    let entityToBuild = entities[entityName]
+    if (!entityToBuild) {
       entities[entityName] = {}
+      entityToBuild = entities[entityName]
     }
-    targetEntity = entities[entityName]
-    targetEntity[itemID] = {}
-    const result = targetEntity[itemID]
 
-    this.buildEntryItem(data, entity, result)
+    entityToBuild[itemID] = {}
+    const itemToBuild = entityToBuild[itemID]
+
+    this.buildEntityItem(data, entity, itemToBuild)
   }
 
-  buildEntryItem (data, entity, result) {
+  buildEntityItem (data, entity, itemToBuild) {
     const entityParams = this.getEntityParams(entity)
 
     for (let key in data) {
@@ -72,33 +72,20 @@ export default class Normalize extends Structure {
 
       if (isEntity) {
         const entityItem = entityParams[key]
-        this.handleKeyOfEntity(result, key, entityItem, dataItem)
+        this.handleEntityKey(itemToBuild, key, entityItem, dataItem)
       } else {
-        result[key] = this.deepCopy(dataItem)
+        itemToBuild[key] = this.deepCopy(dataItem)
       }
     }
   }
 
-  handleKeyOfEntity (result, key, entityItem, dataItem) {
+  handleEntityKey (itemToBuild, key, entityItem, dataItem) {
     if (entityItem instanceof SchemaEntity || entityItem instanceof Array) {
-      result[key] = this.getIDFromData(dataItem, entityItem)
+      itemToBuild[key] = this.getIDFromData(dataItem, entityItem)
       this.buildEntitiesForm(dataItem, entityItem)
     } else {
-      result[key] = {}
-      this.buildEntryItem(dataItem, entityItem, result[key])
+      itemToBuild[key] = {}
+      this.buildEntityItem(dataItem, entityItem, itemToBuild[key])
     }
-  }
-
-  isDataItemAlreadyNormalized (entityName, id) { // 这个看看怎么抽象，重复了
-    const entities = this.normalizedData.entities
-    const entity = entities[entityName]
-
-    if (!entity) return false
-
-    const item = entity[id]
-
-    if (!item) return false
-
-    return true
   }
 }
