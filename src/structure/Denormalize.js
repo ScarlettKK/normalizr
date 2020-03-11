@@ -72,11 +72,26 @@ export default class Denormalize extends Structure {
       this.buildDenormalizedData(entityItem, dataItem, result[key])
     } else if (entityItem instanceof Array) {
       result[key] = []
-      this.buildDenormalizedData(entityItem, dataItem, result[key])
+      this.handleDenormalizedArray(entityItem[0], dataItem, result[key])
     } else {
       result[key] = {}
       this.buildDataItem(entityItem, dataItem, result[key])
     }
+  }
+
+  handleDenormalizedArray (entity, ids, result) {
+    const entityName = entity.name
+    ids.forEach((id) => {
+      const denormalizedItem = this.getDenormalizedItem(entityName, id)
+      if (denormalizedItem) {
+        result.push(denormalizedItem)
+      } else {
+        const itemResult = {}
+        this.buildDenormalizedFrom(entityName, id, itemResult)
+        this.buildDenormalizedData(entity, id, itemResult)
+        result.push(itemResult)
+      }
+    })
   }
 
   getDenormalizedItem (entityName, id) {
