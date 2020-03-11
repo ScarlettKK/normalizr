@@ -61,8 +61,13 @@ export default class Denormalize extends Structure {
 
   handleKeyOfEntity (result, key, entityItem, dataItem) {
     if (entityItem instanceof SchemaEntity) {
-      result[key] = {}
       const entityName = entityItem.name
+      const denormalizedItem = this.getDenormalizedItem(entityName, dataItem)
+      if (denormalizedItem) {
+        result[key] = denormalizedItem
+        return
+      }
+      result[key] = {}
       this.buildDenormalizedFrom(entityName, dataItem, result[key])
       this.buildDenormalizedData(entityItem, dataItem, result[key])
     } else if (entityItem instanceof Array) {
@@ -71,6 +76,14 @@ export default class Denormalize extends Structure {
     } else {
       result[key] = {}
       this.buildDataItem(entityItem, dataItem, result[key])
+    }
+  }
+
+  getDenormalizedItem (entityName, id) {
+    const isDenormalized = this.isDataAlreadyDenormalized(entityName, id)
+    if (isDenormalized) {
+      const denormalizedEntity = this.denormalizedFrom[entityName]
+      return denormalizedEntity[id]
     }
   }
 
