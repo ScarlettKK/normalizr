@@ -20,7 +20,7 @@ export default class Normalize extends Structure {
     return normalizedData
   }
 
-  getIDFromData (data, entity) {
+  getIDFromData (data, entity) { // 参数个数
     if (!(data instanceof Array)) return entity.getDataID(data)
 
     const result = []

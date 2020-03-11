@@ -13,13 +13,13 @@ export default class Denormalize extends Structure {
     const dataId = this.denormalizeDataId
     const entity = this.entity
 
-    this.denormalizedData = this.initDenormalizedResult(dataId)
+    this.denormalizedData = this.initDenormalizedData(dataId)
     this.buildDenormalizedData(entity, dataId, this.denormalizedData)
 
     return this.denormalizedData
   }
 
-  initDenormalizedResult (dataId) {
+  initDenormalizedData (dataId) {
     if (dataId instanceof Array) { return [] } else { return {} }
   }
 
@@ -28,22 +28,22 @@ export default class Denormalize extends Structure {
       const currentEntity = entity[0]
       dataId.forEach((id, index) => {
         result[index] = {}
-        this.getDataItem(currentEntity, id, result[index])
+        this.buildDataItem(currentEntity, id, result[index])
       })
     } else {
-      this.getDataItem(entity, dataId, result)
+      this.buildDataItem(entity, dataId, result)
     }
   }
 
-  getDataItem (entity, dataId, result) {
+  buildDataItem (entity, dataId, result) {
     const entityName = entity.name
     const dataEntity = this.data[entityName]
     const dataItem = dataEntity[dataId] // 可能会没有这一项数据
 
-    this.buildDataItem(entity, dataItem, result)
+    this.buildDataItemKeys(entity, dataItem, result)
   }
 
-  buildDataItem (entity, data, result) {
+  buildDataItemKeys (entity, data, result) {
     const entityParams = this.getEntityParams(entity)
 
     for (let key in data) {
@@ -61,22 +61,26 @@ export default class Denormalize extends Structure {
 
   handleKeyOfEntity (result, key, entityItem, dataItem) {
     if (entityItem instanceof SchemaEntity) {
-      const entityName = entityItem.name
-      const denormalizedItem = this.getDenormalizedItem(entityName, dataItem)
-      if (denormalizedItem) {
-        result[key] = denormalizedItem
-        return
-      }
-      result[key] = {}
-      this.buildDenormalizedFrom(entityName, dataItem, result[key])
-      this.buildDenormalizedData(entityItem, dataItem, result[key])
+      this.handleDenormalizedEntity(entityItem, dataItem, key, result)
     } else if (entityItem instanceof Array) {
       result[key] = []
       this.handleDenormalizedArray(entityItem[0], dataItem, result[key])
     } else {
       result[key] = {}
-      this.buildDataItem(entityItem, dataItem, result[key])
+      this.buildDataItemKeys(entityItem, dataItem, result[key])
     }
+  }
+
+  handleDenormalizedEntity (entityItem, dataItem, key, result) { // 参数顺序 参数个数
+    const entityName = entityItem.name
+    const denormalizedItem = this.getDenormalizedItem(entityName, dataItem)
+    if (denormalizedItem) {
+      result[key] = denormalizedItem
+      return
+    }
+    result[key] = {}
+    this.buildDenormalizedFrom(entityName, dataItem, result[key])
+    this.buildDenormalizedData(entityItem, dataItem, result[key])
   }
 
   handleDenormalizedArray (entity, ids, result) {
