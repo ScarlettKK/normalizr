@@ -9,15 +9,15 @@ export default class Normalize extends Structure {
   }
 
   normalizeProcessing () {
-    const normalized = this.normalizedData
+    const normalizedData = this.normalizedData
     const entity = this.entity
     const data = this.data
 
-    normalized.result = this.getIDFromData(data, entity)
+    normalizedData.result = this.getIDFromData(data, entity)
 
     this.buildEntitiesForm(data, entity)
 
-    return this.normalizedData
+    return normalizedData
   }
 
   getIDFromData (data, entity) {
@@ -39,14 +39,14 @@ export default class Normalize extends Structure {
       const currentEntity = entity[0]
 
       data.forEach((dataItem) => {
-        this.buildEntry(dataItem, currentEntity)
+        this.buildEntryFrom(dataItem, currentEntity)
       })
     } else {
-      this.buildEntry(data, entity)
+      this.buildEntryFrom(data, entity)
     }
   }
 
-  buildEntry (data, entity) {
+  buildEntryFrom (data, entity) {
     const itemID = entity.getDataID(data)
     const entityName = entity.name
     if (this.isDataItemAlreadyNormalized(entityName, itemID)) { return }
@@ -60,10 +60,10 @@ export default class Normalize extends Structure {
     targetEntity[itemID] = {}
     const result = targetEntity[itemID]
 
-    this.handleDataKeys(data, entity, result)
+    this.buildEntryItem(data, entity, result)
   }
 
-  handleDataKeys (data, entity, result) {
+  buildEntryItem (data, entity, result) {
     const entityParams = this.getEntityParams(entity)
 
     for (let key in data) {
@@ -72,24 +72,24 @@ export default class Normalize extends Structure {
 
       if (isEntity) {
         const entityItem = entityParams[key]
-        this.handleEntityKey(result, key, entityItem, dataItem)
+        this.handleKeyOfEntity(result, key, entityItem, dataItem)
       } else {
         result[key] = this.deepCopy(dataItem)
       }
     }
   }
 
-  handleEntityKey (result, key, entityItem, dataItem) {
+  handleKeyOfEntity (result, key, entityItem, dataItem) {
     if (entityItem instanceof SchemaEntity || entityItem instanceof Array) {
       result[key] = this.getIDFromData(dataItem, entityItem)
       this.buildEntitiesForm(dataItem, entityItem)
     } else {
       result[key] = {}
-      this.handleDataKeys(dataItem, entityItem, result[key])
+      this.buildEntryItem(dataItem, entityItem, result[key])
     }
   }
 
-  isDataItemAlreadyNormalized (entityName, id) {
+  isDataItemAlreadyNormalized (entityName, id) { // 这个看看怎么抽象，重复了
     const entities = this.normalizedData.entities
     const entity = entities[entityName]
 
