@@ -42,9 +42,9 @@ export default class Normalize extends Structure {
     const entity = this.currentEntity
 
     if (entity instanceof Array) { // 可能会entity与data不同步为[]
-      const currentEntity = entity[0]
+      const entityItem = entity[0]
       data.forEach((item) => {
-        this.buildEntityFrom(item, currentEntity)
+        this.buildEntityFrom(item, entityItem)
       })
     } else {
       this.buildEntityFrom(data, entity)
