@@ -7,26 +7,25 @@ export default class Structure {
   }
 
   isObject (obj) {
-    return typeof obj === 'object' && obj != null
+    return typeof obj === 'object' && obj !== null
   }
 
-  deepCopy (source, hash = new WeakMap()) { /// /////////////////////////////
-    if (!this.isObject(source)) return source
-    if (hash.has(source)) return hash.get(source) // 新增代码，查哈希表
+  deepCopy (data, hash = new WeakMap()) {
+    if (!this.isObject(data)) return data
+    if (hash.has(data)) return hash.get(data)
 
-    var target = Array.isArray(source) ? [] : {}
-    hash.set(source, target) // 新增代码，哈希表设值
+    var result = new data.constructor()
+    hash.set(data, result)
 
-    for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        if (this.isObject(source[key])) {
-          target[key] = this.deepCopy(source[key], hash) // 新增代码，传入哈希表
-        } else {
-          target[key] = source[key]
-        }
+    for (var key in data) {
+      const value = data[key]
+      if (this.isObject(value)) {
+        result[key] = this.deepCopy(value, hash)
+      } else {
+        result[key] = data[key]
       }
     }
-    return target
+    return result
   }
 
   getEntityParams (entity) {
