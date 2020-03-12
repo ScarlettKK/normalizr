@@ -45,10 +45,11 @@ export default class Denormalize extends Structure {
     const dataItem = dataEntity[dataId]
     this.currentData = dataItem
 
-    this.buildDataItemKeys(entity, result)
+    this.buildDataItemKeys(result)
   }
 
-  buildDataItemKeys (entity, result) {
+  buildDataItemKeys (result) {
+    const entity = this.currentEntity
     const data = this.currentData
     const entityParams = this.getEntityParams(entity)
 
@@ -77,7 +78,7 @@ export default class Denormalize extends Structure {
       this.handleDenormalizedArray(result[key])
     } else {
       result[key] = {}
-      this.buildDataItemKeys(entityItem, result[key])
+      this.buildDataItemKeys(result[key])
     }
   }
 
