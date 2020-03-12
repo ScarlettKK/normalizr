@@ -86,22 +86,21 @@ export default class Normalize extends Structure {
       if (isEntity) {
         const entityItem = entityParams[key]
         this.currentData = dataItem
-        this.handleEntityKey(itemToBuild, key, entityItem)
+        this.currentEntity = entityItem
+        this.handleEntityKey(itemToBuild, key)
       } else {
         itemToBuild[key] = this.deepCopy(dataItem)
       }
     }
   }
 
-  handleEntityKey (itemToBuild, key, entityItem) {
-    const dataItem = this.currentData
+  handleEntityKey (itemToBuild, key) {
+    const entityItem = this.currentEntity
     if (entityItem instanceof SchemaEntity || entityItem instanceof Array) {
-      this.currentEntity = entityItem
       itemToBuild[key] = this.getIDFromData()
       this.buildEntitiesForm()
     } else {
       itemToBuild[key] = {}
-      this.currentData = dataItem
       this.buildEntityItem(entityItem, itemToBuild[key])
     }
   }
