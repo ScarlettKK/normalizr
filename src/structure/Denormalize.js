@@ -9,10 +9,8 @@ export default class Denormalize extends Structure {
   }
 
   denormalizeProcessing () {
-    const dataID = this.denormalizeDataId
-    const entity = this.entity
-    this.currentEntity = entity
-    this.currentDataID = dataID
+    this.currentEntity = this.entity
+    this.currentDataID = this.denormalizeDataId
 
     this.denormalizedData = this.initDenormalizedData()
     this.buildDenormalizedData(this.denormalizedData)
@@ -42,22 +40,20 @@ export default class Denormalize extends Structure {
   }
 
   buildDataItem (result) {
-    const dataID = this.currentDataID
-    const entity = this.currentEntity
-    const entityName = entity.name
-    const dataItem = this.getNormalizedDataItem(entityName, dataID)
+    const { currentDataID, currentEntity } = this
+    const entityName = currentEntity.name
+    const dataItem = this.getNormalizedDataItem(entityName, currentDataID)
     this.currentData = dataItem
 
     this.buildDataItemKeys(result)
   }
 
   buildDataItemKeys (result) {
-    const entity = this.currentEntity
-    const data = this.currentData
-    const entityParams = this.getEntityParams(entity)
+    const { currentData, currentEntity } = this
+    const entityParams = this.getEntityParams(currentEntity)
 
-    for (let key in data) {
-      const dataItem = data[key]
+    for (let key in currentData) {
+      const dataItem = currentData[key]
       const isEntity = this.isEntity(key, entityParams)
 
       if (isEntity) {
@@ -85,11 +81,11 @@ export default class Denormalize extends Structure {
     }
   }
 
-  handleDenormalizedEntity (result, key) { // 参数顺序 参数个数
-    const dataItem = this.currentData
-    const entityItem = this.currentEntity
-    const entityName = entityItem.name
-    const index = this.getNormalizedDataItem(entityName, dataItem)
+  handleDenormalizedEntity (result, key) {
+    const { currentData, currentEntity } = this
+    const entityName = currentEntity.name
+
+    const index = this.getNormalizedDataItem(entityName, currentData)
     const denormalizedItem = this.getDenormalizedItem(index)
     if (denormalizedItem) {
       result[key] = denormalizedItem
@@ -97,8 +93,8 @@ export default class Denormalize extends Structure {
     }
     result[key] = {}
     this.buildDenormalizedFrom(index, result[key])
-    this.currentEntity = entityItem
-    this.currentDataID = dataItem
+    this.currentEntity = currentEntity
+    this.currentDataID = currentData
     this.buildDenormalizedData(result[key])
   }
 

@@ -20,15 +20,14 @@ export default class Normalize extends Structure {
   }
 
   getIDFromData () {
-    const data = this.currentData
-    const entity = this.currentEntity
+    const { currentData, currentEntity } = this
 
-    if (!(data instanceof Array)) return entity.getDataID(data)
+    if (!(currentData instanceof Array)) return currentEntity.getDataID(currentData)
 
     const result = []
-    const entityItem = entity[0]
+    const entityItem = currentEntity[0]
 
-    data.forEach((item) => {
+    currentData.forEach((item) => {
       const itemID = entityItem.getDataID(item)
       result.push(itemID)
     })
@@ -37,21 +36,16 @@ export default class Normalize extends Structure {
   }
 
   buildEntitiesForm () {
-    const data = this.currentData
-    const entity = this.currentEntity
+    const { currentData, currentEntity } = this
 
-    if (entity instanceof Array) {
-      const entityItem = entity[0]
-      try {
-        data.forEach((item) => {
-          this.currentData = item
-          this.buildEntityFrom(entityItem)
-        })
-      } catch (err) {
-        throw new Error('Data type does not match entity')
-      }
+    if (currentEntity instanceof Array) {
+      const entityItem = currentEntity[0]
+      currentData.forEach((item) => {
+        this.currentData = item
+        this.buildEntityFrom(entityItem)
+      })
     } else {
-      this.buildEntityFrom(entity)
+      this.buildEntityFrom(currentEntity)
     }
   }
 
