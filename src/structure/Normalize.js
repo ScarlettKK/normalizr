@@ -6,7 +6,6 @@ export default class Normalize extends Structure {
     super(data, entity)
     this.normalizedData = {}
     this.normalizedData.entities = {}
-    this.structuredFrom = this.normalizedData.entities
   }
 
   normalizeProcessing () {
@@ -60,7 +59,7 @@ export default class Normalize extends Structure {
     const data = this.currentData
     const entityName = entity.name
     const itemID = entity.getDataID(data)
-    if (this.isDataItemAlreadyStructured(entityName, itemID)) { return }
+    if (this.isDataItemAlreadyNormalized(entityName, itemID)) { return }
 
     const entities = this.normalizedData.entities
     let entityToBuild = entities[entityName]
@@ -103,5 +102,16 @@ export default class Normalize extends Structure {
       itemToBuild[key] = {}
       this.buildEntityItem(entityItem, itemToBuild[key])
     }
+  }
+
+  isDataItemAlreadyNormalized (entityName, id) {
+    const entities = this.normalizedData.entities
+    const entity = entities[entityName]
+    if (!entity) return false
+
+    const item = entity[id]
+    if (!item) return false
+
+    return true
   }
 }

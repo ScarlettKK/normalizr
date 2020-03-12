@@ -38,15 +38,4 @@ export default class Structure {
     }
     return false
   }
-
-  isDataItemAlreadyStructured (entityName, id) {
-    const entities = this.structuredFrom
-    const entity = entities[entityName]
-    if (!entity) return false
-
-    const item = entity[id]
-    if (!item) return false
-
-    return true
-  }
 }
