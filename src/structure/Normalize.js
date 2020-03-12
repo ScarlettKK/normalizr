@@ -41,12 +41,16 @@ export default class Normalize extends Structure {
     const data = this.currentData
     const entity = this.currentEntity
 
-    if (entity instanceof Array) { // 可能会entity与data不同步为[]
+    if (entity instanceof Array) {
       const entityItem = entity[0]
-      data.forEach((item) => {
-        this.currentData = item
-        this.buildEntityFrom(entityItem)
-      })
+      try {
+        data.forEach((item) => {
+          this.currentData = item
+          this.buildEntityFrom(entityItem)
+        })
+      } catch (err) {
+        throw new Error('Data type does not match entity')
+      }
     } else {
       this.buildEntityFrom(entity)
     }
@@ -81,18 +85,18 @@ export default class Normalize extends Structure {
 
       if (isEntity) {
         const entityItem = entityParams[key]
-        this.handleEntityKey(itemToBuild, key, entityItem, dataItem)
+        this.currentData = dataItem
+        this.handleEntityKey(itemToBuild, key, entityItem)
       } else {
         itemToBuild[key] = this.deepCopy(dataItem)
       }
     }
   }
 
-  handleEntityKey (itemToBuild, key, entityItem, dataItem) {
+  handleEntityKey (itemToBuild, key, entityItem) {
+    const dataItem = this.currentData
     if (entityItem instanceof SchemaEntity || entityItem instanceof Array) {
       this.currentEntity = entityItem
-      this.currentData = dataItem
-
       itemToBuild[key] = this.getIDFromData()
       this.buildEntitiesForm()
     } else {
