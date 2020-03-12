@@ -44,14 +44,16 @@ export default class Normalize extends Structure {
     if (entity instanceof Array) { // 可能会entity与data不同步为[]
       const entityItem = entity[0]
       data.forEach((item) => {
-        this.buildEntityFrom(item, entityItem)
+        this.currentData = item
+        this.buildEntityFrom(entityItem)
       })
     } else {
-      this.buildEntityFrom(data, entity)
+      this.buildEntityFrom(entity)
     }
   }
 
-  buildEntityFrom (data, entity) {
+  buildEntityFrom (entity) {
+    const data = this.currentData
     const entityName = entity.name
     const itemID = entity.getDataID(data)
     if (this.isDataItemAlreadyStructured(entityName, itemID)) { return }
@@ -66,10 +68,11 @@ export default class Normalize extends Structure {
     entityToBuild[itemID] = {}
     const itemToBuild = entityToBuild[itemID]
 
-    this.buildEntityItem(data, entity, itemToBuild)
+    this.buildEntityItem(entity, itemToBuild)
   }
 
-  buildEntityItem (data, entity, itemToBuild) {
+  buildEntityItem (entity, itemToBuild) {
+    const data = this.currentData
     const entityParams = this.getEntityParams(entity)
 
     for (let key in data) {
@@ -94,7 +97,8 @@ export default class Normalize extends Structure {
       this.buildEntitiesForm()
     } else {
       itemToBuild[key] = {}
-      this.buildEntityItem(dataItem, entityItem, itemToBuild[key])
+      this.currentData = dataItem
+      this.buildEntityItem(entityItem, itemToBuild[key])
     }
   }
 }
