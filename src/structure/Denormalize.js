@@ -10,39 +10,44 @@ export default class Denormalize extends Structure {
   }
 
   denormalizeProcessing () {
-    const dataId = this.denormalizeDataId
+    const dataID = this.denormalizeDataId
     const entity = this.entity
     this.currentEntity = entity
+    this.currentDataID = dataID
 
-    this.denormalizedData = this.initDenormalizedData(dataId)
-    this.buildDenormalizedData(dataId, this.denormalizedData)
+    this.denormalizedData = this.initDenormalizedData()
+    this.buildDenormalizedData(this.denormalizedData)
 
     return this.denormalizedData
   }
 
-  initDenormalizedData (dataId) {
-    if (dataId instanceof Array) { return [] } else { return {} }
+  initDenormalizedData () {
+    const dataID = this.currentDataID
+    if (dataID instanceof Array) { return [] } else { return {} }
   }
 
-  buildDenormalizedData (dataId, result) {
+  buildDenormalizedData (result) {
+    const dataID = this.deepCopy(this.currentDataID)
     const entity = this.currentEntity
 
-    if (dataId instanceof Array) {
+    if (dataID instanceof Array) {
       this.currentEntity = entity[0]
-      dataId.forEach((id, index) => {
+      dataID.forEach((id, index) => {
         result[index] = {}
-        this.buildDataItem(id, result[index])
+        this.currentDataID = id
+        this.buildDataItem(result[index])
       })
     } else {
-      this.buildDataItem(dataId, result)
+      this.buildDataItem(result)
     }
   }
 
-  buildDataItem (dataId, result) {
+  buildDataItem (result) {
+    const dataID = this.currentDataID
     const entity = this.currentEntity
     const entityName = entity.name
     const dataEntity = this.data[entityName]
-    const dataItem = dataEntity[dataId]
+    const dataItem = dataEntity[dataID]
     this.currentData = dataItem
 
     this.buildDataItemKeys(result)
@@ -72,7 +77,7 @@ export default class Denormalize extends Structure {
     const entityItem = this.currentEntity
 
     if (entityItem instanceof SchemaEntity) {
-      this.handleDenormalizedEntity(key, result)
+      this.handleDenormalizedEntity(result, key)
     } else if (entityItem instanceof Array) {
       result[key] = []
       this.handleDenormalizedArray(result[key])
@@ -82,7 +87,7 @@ export default class Denormalize extends Structure {
     }
   }
 
-  handleDenormalizedEntity (key, result) { // 参数顺序 参数个数
+  handleDenormalizedEntity (result, key) { // 参数顺序 参数个数
     const dataItem = this.currentData
     const entityItem = this.currentEntity
     const entityName = entityItem.name
@@ -94,7 +99,8 @@ export default class Denormalize extends Structure {
     result[key] = {}
     this.buildDenormalizedFrom(entityName, dataItem, result[key])
     this.currentEntity = entityItem
-    this.buildDenormalizedData(dataItem, result[key])
+    this.currentDataID = dataItem
+    this.buildDenormalizedData(result[key])
   }
 
   handleDenormalizedArray (result) {
@@ -109,7 +115,8 @@ export default class Denormalize extends Structure {
         const itemResult = {}
         this.buildDenormalizedFrom(entityName, id, itemResult)
         this.currentEntity = entity
-        this.buildDenormalizedData(id, itemResult)
+        this.currentDataID = id
+        this.buildDenormalizedData(itemResult)
         result.push(itemResult)
       }
     })
