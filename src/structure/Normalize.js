@@ -11,30 +11,36 @@ export default class Normalize extends Structure {
 
   normalizeProcessing () {
     const normalizedData = this.normalizedData
-    const entity = this.entity
-    const data = this.data
+    this.currentEntity = this.entity
+    this.currentData = this.data
 
-    normalizedData.result = this.getIDFromData(data, entity)
-    this.buildEntitiesForm(data, entity)
+    normalizedData.result = this.getIDFromData()
+    this.buildEntitiesForm()
 
     return normalizedData
   }
 
-  getIDFromData (data, entity) { // 参数个数
+  getIDFromData () {
+    const data = this.currentData
+    const entity = this.currentEntity
+
     if (!(data instanceof Array)) return entity.getDataID(data)
 
     const result = []
-    const currentEntity = entity[0]
+    const entityItem = entity[0]
 
     data.forEach((item) => {
-      const itemID = currentEntity.getDataID(item)
+      const itemID = entityItem.getDataID(item)
       result.push(itemID)
     })
 
     return result
   }
 
-  buildEntitiesForm (data, entity) {
+  buildEntitiesForm () {
+    const data = this.currentData
+    const entity = this.currentEntity
+
     if (entity instanceof Array) { // 可能会entity与data不同步为[]
       const currentEntity = entity[0]
       data.forEach((item) => {
@@ -81,8 +87,11 @@ export default class Normalize extends Structure {
 
   handleEntityKey (itemToBuild, key, entityItem, dataItem) {
     if (entityItem instanceof SchemaEntity || entityItem instanceof Array) {
-      itemToBuild[key] = this.getIDFromData(dataItem, entityItem)
-      this.buildEntitiesForm(dataItem, entityItem)
+      this.currentEntity = entityItem
+      this.currentData = dataItem
+
+      itemToBuild[key] = this.getIDFromData()
+      this.buildEntitiesForm()
     } else {
       itemToBuild[key] = {}
       this.buildEntityItem(dataItem, entityItem, itemToBuild[key])
