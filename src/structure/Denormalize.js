@@ -12,9 +12,10 @@ export default class Denormalize extends Structure {
   denormalizeProcessing () {
     const dataId = this.denormalizeDataId
     const entity = this.entity
+    this.currentEntity = entity
 
     this.denormalizedData = this.initDenormalizedData(dataId)
-    this.buildDenormalizedData(entity, dataId, this.denormalizedData)
+    this.buildDenormalizedData(dataId, this.denormalizedData)
 
     return this.denormalizedData
   }
@@ -23,19 +24,22 @@ export default class Denormalize extends Structure {
     if (dataId instanceof Array) { return [] } else { return {} }
   }
 
-  buildDenormalizedData (entity, dataId, result) {
+  buildDenormalizedData (dataId, result) {
+    const entity = this.currentEntity
+
     if (dataId instanceof Array) {
-      const currentEntity = entity[0]
+      this.currentEntity = entity[0]
       dataId.forEach((id, index) => {
         result[index] = {}
-        this.buildDataItem(currentEntity, id, result[index])
+        this.buildDataItem(id, result[index])
       })
     } else {
-      this.buildDataItem(entity, dataId, result)
+      this.buildDataItem(dataId, result)
     }
   }
 
-  buildDataItem (entity, dataId, result) {
+  buildDataItem (dataId, result) {
+    const entity = this.currentEntity
     const entityName = entity.name
     const dataEntity = this.data[entityName]
     const dataItem = dataEntity[dataId] // 可能会没有这一项数据
@@ -80,7 +84,8 @@ export default class Denormalize extends Structure {
     }
     result[key] = {}
     this.buildDenormalizedFrom(entityName, dataItem, result[key])
-    this.buildDenormalizedData(entityItem, dataItem, result[key])
+    this.currentEntity = entityItem
+    this.buildDenormalizedData(dataItem, result[key])
   }
 
   handleDenormalizedArray (entity, ids, result) {
@@ -92,7 +97,8 @@ export default class Denormalize extends Structure {
       } else {
         const itemResult = {}
         this.buildDenormalizedFrom(entityName, id, itemResult)
-        this.buildDenormalizedData(entity, id, itemResult)
+        this.currentEntity = entity
+        this.buildDenormalizedData(id, itemResult)
         result.push(itemResult)
       }
     })

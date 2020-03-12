@@ -6,16 +6,11 @@ export default class Structure {
     this.entity = entity
   }
 
-  // deepCopy (data) {
-  //   let copyResult
-  //   copyResult = JSON.parse(JSON.stringify(data))
-  //   return copyResult
-  // }
   isObject (obj) {
     return typeof obj === 'object' && obj != null
   }
 
-  deepCopy (source, hash = new WeakMap()) {
+  deepCopy (source, hash = new WeakMap()) { /// /////////////////////////////
     if (!this.isObject(source)) return source
     if (hash.has(source)) return hash.get(source) // 新增代码，查哈希表
 
